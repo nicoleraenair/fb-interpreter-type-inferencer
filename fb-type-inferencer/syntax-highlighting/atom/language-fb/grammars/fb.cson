@@ -1,0 +1,79 @@
+'scopeName': 'source.fb'
+'name': 'F♭'
+'fileTypes': ['fb','fbsr','afbv']
+
+'patterns': [
+  {
+    'begin': '\\(\\*'
+    'beginCaptures':
+      '0':
+        'name': 'comment.block.fb'
+    'end': '\\*\\)'
+    'endCaptures':
+      '0':
+        'name': 'comment.block.fb'
+    'name': 'comment.block.fb'
+  },
+  {
+    'match': '\\b[0-9]+\\b',
+    'name': 'constant.numeric.fb'
+  },
+  {
+    'match': '\\b(Function) +([a-z][a-zA-Z0-9_\']*) +(->)'
+    'captures':
+      '1':
+        'name': 'keyword.control.fb'
+      '2':
+        'name': 'variable.parameter.fb'
+      '3':
+        'name': 'keyword.operator.fb'
+  },
+  {
+    'match': '\\b(Let) +([a-z][a-zA-Z0-9_\']*) +(=)'
+    'captures':
+      '1':
+        'name': 'keyword.control.fb'
+      '2':
+        'name': 'variable.parameter.fb'
+      '3':
+        'name': 'keyword.operator.fb'
+  },
+  {
+    'match': '\\b(Let) +(Rec) +([a-z][a-zA-Z0-9_\']*) +([a-z][a-zA-Z0-9_\']*) +(=)'
+    'captures':
+      '1':
+        'name': 'keyword.control.fb'
+      '2':
+        'name': 'keyword.control.fb'
+      '3':
+        'name': 'variable.parameter.fb'
+      '4':
+        'name': 'variable.parameter.fb'
+      '5':
+        'name': 'keyword.operator.fb'
+  },
+  {
+    'match': '\\b(True|False)\\b',
+    'name': 'constant.language.fb'
+  },
+  {
+    'match': '\\b[a-z][a-zA-Z0-9_]*\\b',
+    'name': 'variable.other.fb'
+  },
+  {
+    'match': '\\b[A-Z][A-Za-z_]*\\b',
+    'name': 'keyword.control.fb'
+  },
+  {
+    'match': '`[A-Za-z0-9_]+\\b',
+    'name': 'entity.name.type'
+  },
+  {
+    'match': '[+()|;,=]|(;;)|(->)|(<-)|(-)|(\[)|(\])',
+    'name': 'keyword.operator.fb'
+  },
+  {
+    'match': '"[^"]+"',
+    'name': 'string.quoted'
+  }
+]

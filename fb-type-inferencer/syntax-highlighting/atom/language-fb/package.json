@@ -1,0 +1,8 @@
+{
+  "name": "language-fb",
+  "version": "0.1.2",
+  "description": "F♭ language support in Atom",
+  "engines": { "atom" : "*" },
+  "dependencies": {},
+  "license": "MIT"
+}

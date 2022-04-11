@@ -1,0 +1,19 @@
+(executable
+  (name tests)
+  (libraries
+    batteries
+    oUnit
+    efb
+    fb
+  )
+  (modes byte)
+  (flags
+    (:standard -w -33) ;for starter code
+  )
+)
+
+(rule
+  (alias runtest)
+  (deps tests.bc)
+  (action (chdir .. (run src/tests/tests.bc)))
+)

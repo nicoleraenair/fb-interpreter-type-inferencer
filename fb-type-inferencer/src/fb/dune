@@ -1,0 +1,22 @@
+(ocamllex
+  fblexer
+)
+(menhir
+  (modules
+    fbparser
+  )
+)
+(library
+  (name fb)
+  (libraries
+    batteries
+  )
+  (preprocess
+    (pps
+      ppx_deriving.std
+    )
+  )
+  (flags
+    (:standard -w -39) ;for ppx_deriving_yojson, which generates extra rec flags
+  )
+)

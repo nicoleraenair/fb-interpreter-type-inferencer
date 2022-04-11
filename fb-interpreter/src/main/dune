@@ -1,0 +1,8 @@
+(executable
+  (name fb)
+  (libraries
+    batteries
+    fb
+  )
+  (modes byte native)
+)

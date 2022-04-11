@@ -1,0 +1,9 @@
+(executable
+  (name efb)
+  (libraries
+    batteries
+    fb
+    efb
+  )
+  (modes byte native)
+)

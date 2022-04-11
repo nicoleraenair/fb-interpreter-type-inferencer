@@ -1,0 +1,265 @@
+(*
+This file will be used for the second part of your homework assignment.  After
+you have completed your Fb interpreter, you will write some programs in Fb here.
+(If you have not completed the Fb interpreter but would like to work on this
+portion of the homework, you may use the binary distribution provided in the
+"binaries" directory.)  These Fb programs will demonstrate that even a language
+like Fb has some unnecessary features.
+*)
+
+(* ****************************** Problem 1 ****************************** *)
+
+(*
+Problem 1a.
+
+At the moment, the Fb language has a way of comparing integers using the binary
+equality operator "=".  However, there isn't a way to compare integers; that is,
+we have no operator "<".  We could add rules to Fb to support integer
+comparison, but that would require changes to the grammar, the parser, and so
+on.
+
+Instead, write an Fb function named "lessThan" which takes two integers.  It
+returns True if the first integer is strictly less than the second integer and
+False otherwise.  Your function must accept exactly two integers and it must
+always terminate, but you are allowed to declare helper functions *within* the
+declaration of "lessThan" to help you out.
+
+You are *not* permitted to use Let Rec in this problem even if you implemented
+Let Rec in your interpreter.  Your recursion must be based either on
+self-passing or on the Y-combinator.
+
+Examples:
+  lessThan 4 6 ==> True
+  lessThan 6 6 ==> False
+  lessThan 8 6 ==> False
+  lessThan 2 8 ==> True
+*)
+
+Let isNegRec = 
+  Function self -> Function x -> Function y -> 
+    If (x = 0) Then 
+      True
+    Else 
+      If (y = 0) Then 
+        False 
+      Else
+        self self (x + 1) (y - 1)
+In 
+
+Let isNeg = isNegRec isNegRec
+In
+
+Let lessThan =
+  Function x -> Function y ->
+    Let diff = x - y In
+      If (diff = 0) Then False Else isNeg diff diff
+In
+
+(*
+Problem 1b.
+
+Fb also fails to provide any operations over integers more complex than addition
+and subtraction.  Below, define functions to compute the following arithmetic
+operations: multiplication, integer division, and integer modulus.  (Hint: if
+you get stuck, try getting them working for positive numbers first and then
+dealing with negatives.)  Your division and modulus functions should diverge
+when the divisor is zero.
+
+Examples:
+  multiply 8 4 ==> 32
+  multiply 2 4 ==> 8
+  divide 6 2 ==> 3
+  divide 5 3 ==> 1
+  modulus 6 2 ==> 0
+  modulus 5 3 ==> 2
+  divide 8 0 =/=>
+*)
+
+Let Rec multiply 
+  x = Function y -> 
+    If ((x = 0) Or (y = 0)) Then 
+      0
+    Else
+      If (isNeg x x) Then
+        ((0 - y) + (multiply (x + 1) y))
+      Else
+        y + (multiply (x - 1) y)
+In 
+
+Let Rec divide x = Function y ->
+    If (y = 0) Then 
+      divide x y 
+    Else
+      If (x = 0) Then 
+        0 
+      Else
+        If (isNeg x x) Then
+            (If (isNeg y y) Then divide (0-x) (0-y) Else (0-(divide (0-x) y)))
+        Else
+          If (isNeg y y ) Then (0-(divide x (0 - y))) Else 
+            If ( lessThan x y ) Then 0 Else 1 + (divide (x - y) y)
+In
+
+Let Rec modulus x = Function y ->
+    If (y = 0) Then modulus x y Else
+      If (x = 0) Then 0 Else
+        If (isNeg (multiply x y) (multiply x y)) Then x - (multiply y ((divide x y) - 1)) Else 
+    x - (multiply y (divide x y))
+In
+
+(* ****************************** Problem 2 ****************************** *)
+
+(*
+Problem 2a.
+
+Problem 1 informally demonstrated that even those things we normally take for
+granted (such as integer division) can be encoded using functions.  Now, we will
+demonstrate that we can go even further, replacing those constructs we created
+for Fb with functional logic.
+
+For this next problem, you will find the following link helpful:
+http://en.wikipedia.org/wiki/Church_encoding .  This Wikipedia article describes
+a technique known as "Church encoding".  In this problem, we will use Church
+encoding to replace Fb integers!
+
+Church encoding allows us to represent integers as functions.  For instance,
+consider the following table:
+
+	0 --> Function f -> Function x -> x
+	1 --> Function f -> Function x -> f x
+	2 --> Function f -> Function x -> f (f x)
+	3 --> Function f -> Function x -> f (f (f x))
+	...
+
+Effectively, the Church encoding of an integer N is a function which will
+compose another function with itself N times.  Write some Fb functions which
+will convert between the Fb native representation of an integer and the Church
+encoding of an integer.
+
+Examples:
+
+  church 0 ==> Function f -> Function x -> x
+  church 2 ==> Function f -> Function x -> f (f x)
+  unchurch (Function f -> Function x -> f x) ==> 1
+*)
+
+Let unchurch =
+  Function churched ->
+    churched (Function a -> a + 1) 0
+In
+
+Let Rec church n =
+  If (n = 0) Then 
+    Function f -> Function x -> x 
+  Else 
+    Function f -> Function x -> f ((church (n - 1)) f x )
+In
+
+(*
+Problem 2b.
+
+Numbers aren't much use unless you can make them interact.  For instance, the
+following operations work on Church number encodings.  The Wikipedia article
+explains these operations, but they are presented here as usable Fb code:
+*)
+
+Let churchPlus =
+  Function m -> Function n -> Function f -> Function x -> m f (n f x)
+In
+Let churchInc =
+  Function n -> Function f -> Function x -> f (n f x)
+In
+Let churchMult =
+  Function m -> Function n -> Function f -> Function x -> m (n f) x
+In
+Let churchDec =
+  Function n -> Function f -> Function x ->
+    n (Function g -> Function h -> h (g f)) (Function u -> x) (Function u -> u)
+In
+Let churchMinus =
+  Function m -> Function n -> n churchDec m
+In
+
+(*
+For instance, we can now write the following:
+
+unchurch (churchMult (church 4) (churchPlus (church 1) (church 2)))
+  ==> 12
+
+Marvelous!  :-D
+
+Write a Church encoding of factorial.  It should take in a single Church-encoded
+number and return its Church-encoded factorial.  This function may not use any
+Fb operation other than function application; for instance, you are not allowed
+to convert the Church numeral into an Fb integer, operate on it, and then
+convert it back.
+
+Hint: You will need to perform a test to see if a number is zero at some point.
+The following trick works nicely with Church numerals.  Instead of
+
+    if n != 0 then a else b
+
+write
+
+    n (function z -> a) (b)
+
+This way, any Church zero will just return its argument (b, the false branch)
+and any positive Church numeral will return some number of compositions over the
+function.  Since the function throws away its input and just returns a (the
+true branch), non-zero numbers will always return a.  :)
+
+The behavior of your function is unspecified for values less than zero.
+*)
+
+Let Rec churchFactorial n =
+    n (Function z -> (churchMult n (churchFactorial (churchDec n)))) (church 1)
+In
+
+(*
+Problem 2c.
+
+We've shown that integers can be encoded as functions.  How about booleans?
+The following definitions represent the Church encoding of true and false.
+*)
+
+Let churchTrue = Function t -> Function f -> t In
+Let churchFalse = Function t -> Function f -> f In
+
+(*
+These operations work in a fashion similar to pairing.  When we would normally
+write "if b then x else y", we instead write "b x y".  If b is true, it will
+return its first argument - the expression we want to use when the condition is
+true.  If b is false, it will return its second argument.
+
+Using this notion of boolean encoding, define Fb functions to represent the
+standard boolean operators and, or, and not.  (You can find definitions of
+these operations in lambda calculus format on the Wikipedia page.)
+*)
+
+Let churchAnd =
+  Function a -> Function b ->
+    a b a
+In
+
+Let churchOr =
+  Function a -> Function b ->
+    a a b
+
+In
+
+Let churchNot =
+  Function a ->
+    a churchFalse churchTrue
+In
+
+(* **************************** TESTING SPACE **************************** *)
+(* DO NOT DELETE THE ABOVE COMMENT. *)
+
+(*
+Since this file is one great big expression, anything you put down here will
+be evaluated when you pass this file to the Fb interpreter.  As a result, you
+can write expressions here to experiment with the definitions you provided
+above.  For now, the following code is here just to make things parse
+properly.  You'll need the ";;" to make the interpreter work correctly. *)
+
+0;;
